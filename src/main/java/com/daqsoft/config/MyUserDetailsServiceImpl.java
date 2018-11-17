@@ -1,13 +1,12 @@
 package com.daqsoft.config;
 
-import com.daqsoft.dao.UserRepository;
 import com.daqsoft.entity.User;
+import com.daqsoft.service.UserService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,23 +23,22 @@ import java.util.List;
 @Service
 public class MyUserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public MyUserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public MyUserDetailsServiceImpl(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(s);
+        User user = userService.findByName(s);
         if (null != user) {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
-            authorities.add(authority);
+            user.getRoles().forEach(role -> {
+                GrantedAuthority authority = new SimpleGrantedAuthority(role.getCode());
+                authorities.add(authority);
+            });
             return new MyUserDetails(user, authorities);
-//            return new MyUserDetails(user);
-            /*return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), true,
-                    true, true, true, authorities);*/
         } else {
             // 用户不存在
             throw new UsernameNotFoundException(s);

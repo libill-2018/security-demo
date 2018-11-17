@@ -6,8 +6,9 @@
 </head>
 <body>
 <div>
-    这是主页
+    用户首页
     <a href="/index">首页</a>
+    <a href="/admin/index">超管首页</a>
 </div>
 </body>
 </html>

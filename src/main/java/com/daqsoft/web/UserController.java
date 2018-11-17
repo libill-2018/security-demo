@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @since JDK 1.8
  */
 @Controller
-@RequestMapping(value = "user")
+@RequestMapping(value = "/user")
 public class UserController {
 
     private final UserService userService;
@@ -25,9 +25,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "save")
+    @GetMapping(value = "/save")
     public void save(User user) {
         userService.save(user);
+    }
+
+    @GetMapping(value = "/index")
+    public String index() {
+        return "/user/index";
     }
 
 }

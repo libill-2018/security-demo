@@ -1,16 +1,14 @@
 package com.daqsoft.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +25,14 @@ import java.util.List;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final MyUserDetailsServiceImpl myUserDetailsService;
+    private final MySecurityInterceptor mySecurityInterceptor;
+    private final PasswordEncoder passwordEncoder;
 
-    public WebSecurityConfig(MyUserDetailsServiceImpl myUserDetailsService) {
+    public WebSecurityConfig(MyUserDetailsServiceImpl myUserDetailsService,
+                             MySecurityInterceptor mySecurityInterceptor, PasswordEncoder passwordEncoder) {
         this.myUserDetailsService = myUserDetailsService;
+        this.mySecurityInterceptor = mySecurityInterceptor;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         List<AuthenticationProvider> providers = new ArrayList<>();
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(myUserDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(encoder());
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         providers.add(daoAuthenticationProvider);
         return new ProviderManager(providers);
     }
@@ -54,21 +57,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                    .anyRequest().hasRole("USER")
-                    .antMatchers("/resources/**").permitAll()
-                    .antMatchers("/user/**").permitAll()
+                .antMatchers("/resources/**").permitAll()
+                .antMatchers("/user/save").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                    .loginPage("/login").permitAll().successForwardUrl("/index").failureUrl("/login-error")
+                .loginPage("/login").permitAll().successForwardUrl("/index").failureUrl("/login-error")
                 .and()
                 .logout().logoutUrl("/logout").logoutSuccessUrl("/login")
                 .and()
-                .httpBasic();
-    }
-
-    @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder(11);
+                .addFilterAfter(mySecurityInterceptor, FilterSecurityInterceptor.class);
     }
 
 }
