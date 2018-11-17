@@ -3,18 +3,14 @@ package com.daqsoft.config;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -27,12 +23,6 @@ import java.util.stream.Collectors;
  */
 @Component
 public class MyAccessDecisionManager implements AccessDecisionManager {
-
-    private final MyUserDetailsServiceImpl userDetailsService;
-
-    public MyAccessDecisionManager(MyUserDetailsServiceImpl userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
 
     @Override
     public void decide(Authentication authentication, Object object, Collection<ConfigAttribute> configAttributes)
